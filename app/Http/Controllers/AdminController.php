@@ -86,6 +86,37 @@ class AdminController extends Controller
         return view('admin.products', compact('products'));
     }
 
+    public function inventory(Request $request): View
+    {
+        $products = MenuItem::query()
+            ->when($request->filled('search'), fn ($query) => $query->where(function ($query) use ($request) {
+                $search = $request->input('search');
+                $query->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('product_code', 'like', '%'.$search.'%')
+                    ->orWhere('size_label', 'like', '%'.$search.'%');
+            }))
+            ->orderBy('stock')
+            ->orderBy('name')
+            ->paginate(25)
+            ->withQueryString();
+
+        return view('admin.inventory', [
+            'products' => $products,
+            'lowStockCount' => MenuItem::whereBetween('stock', [1, 10])->count(),
+            'outOfStockCount' => MenuItem::where('stock', 0)->count(),
+        ]);
+    }
+
+    public function updateInventory(Request $request, MenuItem $product): RedirectResponse
+    {
+        $data = $request->validate([
+            'stock' => ['required', 'integer', 'min:0', 'max:100000'],
+        ]);
+        $product->update($data);
+
+        return back()->with('status', 'Stock quantity updated successfully.');
+    }
+
     public function storeProduct(Request $request): RedirectResponse
     {
         $data = $this->validatedProduct($request);

@@ -17,12 +17,12 @@
             </a>
             <div class="header-actions">
         @if(session('customer_id'))
-            <a href="{{ route('account') }}" class="account-button">👤 Account</a>
+            <a href="{{ route('account') }}" class="account-button">Account</a>
         @else
             <a href="{{ route('login') }}" class="login-button">Log In</a>
         @endif
                 @if(!request()->routeIs('cart', 'checkout'))
-                <a class="cart-button" href="{{ route('cart') }}">🛒 Cart ({{ array_sum(session('cart', [])) }})</a>
+                <a class="cart-button" href="{{ route('cart') }}">Cart ({{ array_sum(session('cart', [])) }})</a>
                 @endif
             </div>
         </nav>

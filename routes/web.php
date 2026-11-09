@@ -44,6 +44,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/products', [AdminController::class, 'storeProduct'])->name('products.store');
         Route::patch('/products/{product}', [AdminController::class, 'updateProduct'])->name('products.update');
         Route::delete('/products/{product}', [AdminController::class, 'deleteProduct'])->name('products.destroy');
+        Route::get('/inventory', [AdminController::class, 'inventory'])->name('inventory.index');
+        Route::patch('/inventory/{product}', [AdminController::class, 'updateInventory'])->name('inventory.update');
         Route::get('/orders', [AdminController::class, 'orders'])->name('orders.index');
         Route::patch('/orders/{order}', [AdminController::class, 'updateOrder'])->name('orders.update');
         Route::get('/customers', [AdminController::class, 'customers'])->name('customers.index');
@@ -51,5 +53,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/accounts', [AdminController::class, 'accounts'])->name('accounts.index');
         Route::post('/accounts', [AdminController::class, 'storeAdmin'])->name('accounts.store');
         Route::patch('/accounts/{admin}', [AdminController::class, 'updateAdmin'])->name('accounts.update');
+        Route::get('/reports', fn () => redirect()->route('admin.sales'))->name('reports');
     });
 });

@@ -167,6 +167,47 @@ class StorefrontTest extends TestCase
         $this->get('/admin')->assertRedirect('/admin/login');
     }
 
+    public function test_admin_can_manage_inventory_stock(): void
+    {
+        $admin = Admin::create([
+            'username' => 'inventory-manager',
+            'first_name' => 'Inventory',
+            'last_name' => 'Manager',
+            'email' => 'inventory-manager@example.test',
+            'password_hash' => Hash::make('manager-password'),
+            'role' => 'manager',
+            'is_active' => true,
+        ]);
+        $product = MenuItem::create([
+            'product_code' => 'PB-STOCK-1',
+            'name' => 'Inventory Milk Tea',
+            'price' => 35,
+            'category' => 'Beverage',
+            'stock' => 5,
+            'is_available' => true,
+        ]);
+
+        $this->withSession(['admin_id' => $admin->id])
+            ->get('/admin/inventory')
+            ->assertOk()
+            ->assertSee('Inventory Milk Tea')
+            ->assertSee('Running low');
+
+        $this->withSession(['admin_id' => $admin->id])
+            ->patch('/admin/inventory/'.$product->id, ['stock' => 12])
+            ->assertRedirect()
+            ->assertSessionHas('status', 'Stock quantity updated successfully.');
+
+        $this->assertDatabaseHas('menu_items', [
+            'id' => $product->id,
+            'stock' => 12,
+        ]);
+
+        $this->withSession(['admin_id' => $admin->id])
+            ->patch('/admin/inventory/'.$product->id, ['stock' => 100001])
+            ->assertSessionHasErrors('stock');
+    }
+
     public function test_customer_can_reset_password_with_a_valid_one_time_token(): void
     {
         $customer = Customer::create([
@@ -217,6 +258,7 @@ class StorefrontTest extends TestCase
             'username' => 'store-manager',
             'first_name' => 'Store',
             'last_name' => 'Manager',
+            'email' => 'store-manager@example.test',
             'password_hash' => Hash::make('manager-password'),
             'role' => 'manager',
             'is_active' => true,
@@ -229,9 +271,11 @@ class StorefrontTest extends TestCase
 
         $this->get('/admin')->assertOk()->assertSee('Dashboard');
         $this->get('/admin/products')->assertOk()->assertSee('Products');
+        $this->get('/admin/inventory')->assertOk()->assertSee('Stock');
         $this->get('/admin/orders')->assertOk()->assertSee('Orders');
         $this->get('/admin/customers')->assertOk()->assertSee('Customers');
         $this->get('/admin/sales')->assertOk()->assertSee('last 30 days');
         $this->get('/admin/accounts')->assertOk()->assertSee('Administrator accounts');
+        $this->get('/admin/reports')->assertRedirect('/admin/sales');
     }
 }
