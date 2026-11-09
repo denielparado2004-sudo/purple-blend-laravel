@@ -16,27 +16,36 @@ use Illuminate\Support\Str;
 
 class StoreController extends Controller
 {
-    public function index(Request $request): View
-    {
-        $products = MenuItem::query()
-            ->where('is_available', true)
-            ->when($request->filled('category') && $request->input('category') !== 'All', function ($query) use ($request) {
-                $category = (string) $request->input('category');
+    
+public function index(Request $request): View
+{
+    $products = MenuItem::query()
+        ->where('is_available', true)
+        ->when($request->filled('category') && $request->input('category') !== 'All', function ($query) use ($request) {
+            $category = (string) $request->input('category');
 
-                if ($category === 'Meryenda') {
-                    $query->whereIn('category', ['Meryenda', 'Meryenda / Dessert']);
-                } elseif ($category === 'Beverage') {
-                    $query->whereIn('category', ['Beverage', 'Drinks']);
-                } else {
-                    $query->where('category', $category);
-                }
-            })
-            ->when($request->filled('search'), fn ($query) => $query->where('name', 'like', '%'.$request->input('search').'%'))
-            ->orderByDesc('id')
-            ->get();
+            if ($category === 'Meryenda') {
+                $query->whereIn('category', ['Meryenda', 'Meryenda / Dessert']);
+            } elseif ($category === 'Beverage') {
+                $query->whereIn('category', ['Beverage', 'Drinks']);
+            } else {
+                $query->where('category', $category);
+            }
+        })
+        ->when($request->filled('search'), fn ($query) => $query->where('name', 'like', '%'.$request->input('search').'%'))
+        ->orderByDesc('id')
+        ->get();
 
-        return view('store.index', compact('products'));
-    }
+    $customer = $request->attributes->get('customer');
+
+    $orders = $customer->orders()
+        ->with(['items'])
+        ->latest()
+        ->get();
+
+    return view('store.index', compact('products', 'orders'));
+}
+
 
     public function show(MenuItem $product): View
     {
@@ -341,26 +350,54 @@ class StoreController extends Controller
         return view('store.order', ['order' => $order->load(['items', 'payment'])]);
     }
 
-    public function cancelOrder(Request $request, Order $order): RedirectResponse
-    {
-        $this->ensureOrderOwner($request, $order);
-        if ($order->order_status !== 'pending') {
-            return back()->withErrors(['order' => 'Only pending orders can be cancelled.']);
+    
+public function cancelOrder(Request $request, Order $order): RedirectResponse
+{
+    $this->ensureOrderOwner($request, $order);
+
+    if ($order->order_status !== 'pending') {
+        return back()->withErrors([
+            'order' => 'Only pending orders can be cancelled.',
+        ]);
+    }
+
+    if ($order->created_at->lt(now()->subMinutes(5))) {
+        return back()->withErrors([
+            'order' => 'Orders can only be cancelled within 5 minutes of placing them.',
+        ]);
+    }
+
+    $cancelled = DB::transaction(function () use ($order) {
+        $lockedOrder = Order::whereKey($order->id)
+            ->lockForUpdate()
+            ->firstOrFail();
+
+        if (
+            $lockedOrder->order_status !== 'pending' ||
+            $lockedOrder->created_at->lt(now()->subMinutes(5))
+        ) {
+            return false;
         }
 
-        DB::transaction(function () use ($order) {
-            $order = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
-            if ($order->order_status !== 'pending') {
-                return;
-            }
-            $order->update(['order_status' => 'cancelled']);
-            foreach ($order->items()->whereNotNull('menu_item_id')->get() as $item) {
-                MenuItem::whereKey($item->menu_item_id)->increment('stock', $item->quantity);
-            }
-        });
+        $lockedOrder->update(['order_status' => 'cancelled']);
 
-        return back()->with('status', 'Order cancelled.');
+        foreach ($lockedOrder->items()->whereNotNull('menu_item_id')->get() as $item) {
+            MenuItem::whereKey($item->menu_item_id)
+                ->increment('stock', $item->quantity);
+        }
+
+        return true;
+    });
+
+    if (!$cancelled) {
+        return back()->withErrors([
+            'order' => 'This order can no longer be cancelled.',
+        ]);
     }
+
+    return back()->with('status', 'Order cancelled.');
+}
+
 
     public function account(Request $request): View
     {

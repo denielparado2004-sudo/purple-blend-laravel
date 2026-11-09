@@ -8,7 +8,7 @@
         <p>Your campus favorites, all in one place. Browse the menu and plan your next meal with Purple Blend.</p>
         <div class="hero-actions">
             <a class="hero-primary-button" href="#menu">Explore Our Menu <span aria-hidden="true">&rarr;</span></a>
-            <a class="hero-secondary-button" href="{{ session('customer_id') ? route('orders.index') : route('login') }}">Track My Orders</a>
+            <a class="hero-secondary-button" href="#my-orders" data-store-tab="orders">Track My Orders</a>
         </div>
         <div class="hero-note"><span class="hero-note-icon" aria-hidden="true">✦</span><span>Made for your campus days</span></div>
     </div>
@@ -25,11 +25,17 @@
 </section>
 
 <div class="page-tabs" aria-label="Store sections">
-    <a class="page-tab active" href="#menu" aria-current="page">Menu</a>
-    <a class="page-tab" href="{{ session('customer_id') ? route('orders.index') : route('login') }}">My Orders</a>
+    <a class="page-tab active" href="#menu" data-store-tab="menu" aria-current="page">Menu</a>
+    <a class="page-tab" href="#my-orders" data-store-tab="orders">My Orders</a>
+
     <form class="search-box" method="get" action="{{ route('home') }}#menu">
-        @if(request('category'))<input type="hidden" name="category" value="{{ request('category') }}">@endif
-        <svg class="search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4.2 4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        @if(request('category'))
+            <input type="hidden" name="category" value="{{ request('category') }}">
+        @endif
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.8"/>
+            <path d="m16 16 4.2 4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
         <input type="search" name="search" value="{{ request('search') }}" placeholder="Search food, drinks, and more..." aria-label="Search menu items">
     </form>
 </div>
@@ -72,6 +78,156 @@
         @empty
             <p class="empty-message">No items found. Try another search.</p>
         @endforelse
-    </div>
+        </div>
 </main>
+
+
+<section id="my-orders" class="page-section orders-section" hidden>
+    <div class="menu-intro">
+        <div class="section-heading">
+            <span class="menu-kicker">YOUR PURPLE BLEND ORDERS</span>
+            <h2>My Orders</h2>
+            <p>Track your orders and check your pickup details.</p>
+        </div>
+    </div>
+
+    <div class="orders-list">
+        @forelse($orders as $order)
+            <article class="order-card">
+                <div class="order-card-header">
+                    <h3>{{ $order->order_code }}</h3>
+
+                    <span class="order-status {{ $order->order_status }}">
+                        {{ str($order->order_status)->headline() }}
+                    </span>
+                </div>
+
+                <div class="order-details">
+                    <p>
+                        <span>Order Date</span>
+                        <strong>{{ $order->created_at->format('M j, Y g:i A') }}</strong>
+                    </p>
+
+                    <p>
+                        <span>Pickup Details</span>
+                        <strong>
+                            {{ str($order->dining_option)->headline() }}
+                            @if($order->pickup_date)
+                                · {{ $order->pickup_date->format('M j, Y') }}
+                            @endif
+                            @if($order->pickup_time)
+                                at {{ substr($order->pickup_time, 0, 5) }}
+                            @endif
+                        </strong>
+                    </p>
+
+                    <p>
+                        <span>Payment</span>
+                        <strong>
+                            {{ str($order->payment?->payment_status ?? 'pending')->headline() }}
+                        </strong>
+                    </p>
+
+                    @if($order->notes)
+                        <p>
+                            <span>Order Note</span>
+                            <strong>{{ $order->notes }}</strong>
+                        </p>
+                    @endif
+                </div>
+
+                <ul class="order-items">
+                    @foreach($order->items as $item)
+                        <li>
+                            <span>{{ $item->product_name }} × {{ $item->quantity }}</span>
+                            <strong>₱{{ number_format($item->line_total, 2) }}</strong>
+                        </li>
+                    @endforeach
+                </ul>
+
+                <div class="order-card-footer">
+                    <span>
+                        Total
+                        <small>Order amount</small>
+                    </span>
+
+                    <strong>₱{{ number_format($order->total_amount, 2) }}</strong>
+                </div>
+
+                <div class="order-card-actions">
+                    <a class="button secondary" href="{{ route('orders.show', $order) }}">
+                        View Order
+                    </a>
+
+                    @if($order->order_status === 'pending' && $order->created_at->gte(now()->subMinutes(5)))
+                        <form method="post"
+                              action="{{ route('orders.cancel', $order) }}"
+                              onsubmit="return confirm('Are you sure you want to cancel this order?')">
+                            @csrf
+                            <button class="cancel-order-button" type="submit">Cancel Order</button>
+                        </form>
+                    @endif
+                </div>
+            </article>
+        @empty
+            <div class="orders-empty">
+                <h3>No orders yet</h3>
+                <p>You haven't placed an order yet. Browse our menu and find your favorites!</p>
+                <a class="orders-browse-button" href="#menu" data-store-tab="menu">
+                    Browse Menu
+                </a>
+            </div>
+        @endforelse
+    </div>
+</section>
+
+
 @endsection
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tabs = document.querySelectorAll('[data-store-tab]');
+    const menu = document.getElementById('menu');
+    const orders = document.getElementById('my-orders');
+    const search = document.querySelector('.search-box');
+
+    if (!menu || !orders || !tabs.length) {
+        return;
+    }
+
+    function activateTab(tabName) {
+        const showOrders = tabName === 'orders';
+
+        menu.hidden = showOrders;
+        orders.hidden = !showOrders;
+
+        if (search) {
+            search.hidden = showOrders;
+        }
+
+        tabs.forEach(function (tab) {
+            const active = tab.dataset.storeTab === tabName;
+
+            tab.classList.toggle('active', active);
+
+            if (active) {
+                tab.setAttribute('aria-current', 'page');
+            } else {
+                tab.removeAttribute('aria-current');
+            }
+        });
+
+        history.replaceState(null, '', showOrders ? '#my-orders' : '#menu');
+    }
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener('click', function (event) {
+            event.preventDefault();
+            activateTab(tab.dataset.storeTab);
+        });
+    });
+
+    activateTab(window.location.hash === '#my-orders' ? 'orders' : 'menu');
+});
+</script>
+@endpush

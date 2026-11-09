@@ -6,7 +6,6 @@ use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureCustomer;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [StoreController::class, 'index'])->name('home');
 Route::get('/products/{product}', [StoreController::class, 'show'])->name('products.show');
 Route::get('/cart', [StoreController::class, 'cart'])->name('cart');
 Route::post('/cart/items', [StoreController::class, 'addToCart'])->name('cart.add');
@@ -23,7 +22,7 @@ Route::post('/reset-password', [StoreController::class, 'resetPassword'])->middl
 Route::post('/logout', [StoreController::class, 'logout'])->name('logout');
 
 Route::middleware(EnsureCustomer::class)->group(function () {
-    Route::get('/checkout', [StoreController::class, 'checkout'])->name('checkout');
+    Route::get('/', [StoreController::class, 'index'])->name('home');    Route::get('/checkout', [StoreController::class, 'checkout'])->name('checkout');
     Route::post('/checkout', [StoreController::class, 'placeOrder'])->name('orders.store');
     Route::get('/orders', [StoreController::class, 'orders'])->name('orders.index');
     Route::get('/orders/{order}', [StoreController::class, 'order'])->name('orders.show');
