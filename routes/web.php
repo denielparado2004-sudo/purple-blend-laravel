@@ -39,6 +39,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::middleware(EnsureAdmin::class)->group(function () {
         Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/account', [AdminController::class, 'account'])->name('account');
+        Route::patch('/account/username', [AdminController::class, 'updateAccountUsername'])
+        ->name('account.username');
+        Route::patch('/account/password', [AdminController::class, 'updateAccountPassword'])
+        ->name('account.password');
         Route::get('/products', [AdminController::class, 'products'])->name('products.index');
         Route::post('/products', [AdminController::class, 'storeProduct'])->name('products.store');
         Route::patch('/products/{product}', [AdminController::class, 'updateProduct'])->name('products.update');

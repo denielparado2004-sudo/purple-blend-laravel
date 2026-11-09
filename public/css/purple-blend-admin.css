@@ -1,21 +1,353 @@
-.admin-menu-toggle,
-.admin-navigation-backdrop {
-    display: none;
+.admin-body {
+    margin: 0;
+    min-height: 100vh;
+    background: #FCFAFD;
+    color: #30243A;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
-.admin-header nav a.active {
-    background: var(--lavender);
-    color: var(--purple-dark);
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
 }
 
-.admin-menu-toggle .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
+/* Sidebar */
+
+.admin-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    display: flex;
+    width: 245px;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 28px 18px;
+    background: #441D56;
+    color: #fff;
+}
+
+.admin-sidebar-brand {
+    display: block;
+    width: calc(100% + 36px);
+    margin: -28px -18px 35px;
+}
+
+.admin-sidebar-brand img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.admin-sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.admin-sidebar-nav > a {
+    display: block;
+    padding: 12px 13px;
+    border-radius: 8px;
+    color: #F2E9F7;
+    font-size: 14px;
+    text-decoration: none;
+    transition: background .18s ease;
+}
+
+.admin-sidebar-nav > a:hover,
+.admin-sidebar-nav > a.active {
+    background: #6F2B91;
+    color: #fff;
+}
+
+.admin-sidebar-bottom {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,.18);
+}
+
+.admin-sidebar-user {
+    display: grid;
+    gap: 4px;
+    padding: 10px 8px;
+    overflow-wrap: anywhere;
+}
+
+.admin-sidebar-user strong {
+    font-size: 14px;
+}
+
+.admin-sidebar-user small {
+    color: #DCC7E9;
+    font-size: 12px;
+}
+
+.admin-logout {
+    width: 100%;
+    padding: 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #FFD6D6;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.admin-logout:hover {
+    background: rgba(255,255,255,.10);
+}
+
+/* Main content */
+
+.admin-main {
+    width: calc(100% - 245px);
+    min-width: 0;
+    min-height: 100vh;
+    margin-left: 245px;
+    padding: 34px;
+}
+
+.admin-main > h1 {
+    margin: 4px 0 25px;
+    font-size: 28px;
+}
+
+/* Dashboard */
+
+.admin-main .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 30px;
+}
+
+.admin-main .stat-card {
+    padding: 21px;
+    border: 1px solid #EEE7F2;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.admin-main .stat-card > span {
+    color: #81758A;
+    font-size: 13px;
+}
+
+.admin-main .stat-card strong {
+    display: block;
+    margin-top: 10px;
+    color: #4E176B;
+    font-size: 25px;
+}
+
+.admin-main .welcome-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 25px;
+    padding: 25px 28px;
+    border-radius: 14px;
+    background: linear-gradient(115deg, #4E176B, #6F2B91);
+    color: #fff;
+}
+
+.admin-main .welcome-banner h2 {
+    margin: 0 0 8px;
+    font-size: 22px;
+}
+
+.admin-main .welcome-banner p {
+    margin: 0;
+    color: #F2E9F7;
+    font-size: 14px;
+}
+
+.admin-main .welcome-symbol {
+    display: grid;
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(255,255,255,.15);
+    font-size: 30px;
+}
+
+.admin-main .section-card {
+    margin-top: 28px;
     overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
+    border: 1px solid #EEE7F2;
+    border-radius: 12px;
+    background: #fff;
 }
+
+.admin-main .section-header {
+    padding: 22px;
+    border-bottom: 1px solid #EEE7F2;
+}
+
+.admin-main .section-header h2 {
+    margin: 0 0 5px;
+    font-size: 18px;
+}
+
+.admin-main .section-header p {
+    margin: 0;
+    color: #81758A;
+    font-size: 13px;
+}
+
+.admin-main .table-wrap,
+.admin-main .table-wrapper {
+    overflow-x: auto;
+}
+
+.admin-main table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-main th,
+.admin-main td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #EEE7F2;
+    text-align: left;
+}
+
+.admin-main th {
+    background: #F7F0FB;
+    color: #6E6178;
+    font-size: 11px;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+
+.admin-main tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.admin-main .order-code {
+    color: #6F2B91;
+    font-weight: 700;
+}
+
+.admin-main .empty-state,
+.admin-main .empty-cell {
+    padding: 35px;
+    color: #81758A;
+    text-align: center;
+}
+
+/* Status labels */
+
+.admin-main .status {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 20px;
+    background: #F0EAF3;
+    color: #6F2B91;
+    font-size: 12px;
+}
+
+.admin-main .status-pending {
+    background: #FFF4DC;
+    color: #936818;
+}
+
+.admin-main .status-confirmed,
+.admin-main .status-preparing {
+    background: #FFF0DC;
+    color: #986018;
+}
+
+.admin-main .status-ready,
+.admin-main .status-completed {
+    background: #EAF8F0;
+    color: #126342;
+}
+
+.admin-main .status-cancelled {
+    background: #FEF0EF;
+    color: #A94646;
+}
+
+/* Account page */
+
+.admin-account-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 22px;
+    align-items: start;
+}
+
+.admin-account-card {
+    margin-bottom: 22px;
+    overflow: hidden;
+    border: 1px solid #EEE7F2;
+    border-radius: 13px;
+    background: #fff;
+}
+
+.admin-account-card-header {
+    padding: 22px;
+    border-bottom: 1px solid #EEE7F2;
+}
+
+.admin-account-card-header h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+}
+
+.admin-account-card-header p {
+    margin: 0;
+    color: #81758A;
+    font-size: 13px;
+}
+
+.admin-account-card-body {
+    padding: 22px;
+}
+
+.admin-account-card-body form {
+    display: grid;
+    gap: 16px;
+}
+
+.admin-account-card-body label {
+    display: grid;
+    gap: 8px;
+}
+
+.admin-account-card-body input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #DCD1E3;
+    border-radius: 8px;
+}
+
+.admin-account-info {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.admin-account-info span {
+    display: block;
+    margin-bottom: 7px;
+    color: #81758A;
+    font-size: 12px;
+}
+
+.admin-account-info strong {
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+/* Existing inventory styles */
 
 .inventory-intro {
     margin: -14px 0 24px;
@@ -74,97 +406,117 @@
     min-width: 0;
 }
 
+/* Mobile navigation */
+
+.admin-menu-toggle {
+    display: none;
+}
+
+@media (max-width: 1100px) {
+    .admin-main .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-main {
+        padding: 25px;
+    }
+}
+
 @media (max-width: 650px) {
-    .admin-header {
+    .admin-layout {
+        display: block;
+    }
+
+    .admin-sidebar {
         position: relative;
-        z-index: 1002;
-        flex-direction: row;
-        align-items: center;
+        top: auto;
+        bottom: auto;
+        width: 100%;
+        min-height: auto;
+        padding: 20px;
+        overflow: visible;
+    }
+
+    .admin-sidebar-brand {
+        width: calc(100% + 40px);
+        margin: -20px -20px 15px;
+    }
+
+    .admin-sidebar-brand img {
+        max-height: 110px;
+        object-fit: contain;
     }
 
     .admin-menu-toggle {
-        display: inline-flex;
-        min-width: 42px;
-        min-height: 42px;
-        align-items: center;
-        justify-content: center;
-        margin-left: auto;
-        border: 1px solid rgba(255, 255, 255, 0.35);
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.12);
-        color: #fff;
-        font-size: 22px;
-        cursor: pointer;
-    }
-
-    .admin-header nav {
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        z-index: 1001;
         display: flex;
-        width: min(84vw, 310px);
-        height: 100vh;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-        overflow-x: hidden;
-        overflow-y: auto;
-        padding: 70px 18px 22px;
-        background: #441d56;
-        box-shadow: 12px 0 35px rgba(22, 10, 28, 0.22);
-        transform: translateX(-105%);
-        transition: transform 0.24s ease;
-        will-change: transform;
-    }
-
-    .admin-header nav.is-open {
-        transform: translateX(0);
-    }
-
-    .admin-header nav a,
-    .admin-header nav .nav-button {
-        display: block;
-        padding: 12px;
+        width: 100%;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid rgba(255,255,255,.25);
+        border-radius: 8px;
+        background: rgba(255,255,255,.10);
         color: #fff;
         text-align: left;
     }
 
-    .admin-header nav a.active,
-    .admin-header nav a:hover {
-        background: rgba(255, 255, 255, 0.16);
-        color: #fff;
+    .admin-sidebar-nav {
+        display: none;
+        margin-top: 12px;
     }
 
-    .admin-header nav form {
-        margin-top: auto;
+    .admin-sidebar-nav.is-open {
+        display: flex;
     }
 
-    .admin-navigation-backdrop:not([hidden]) {
-        position: fixed;
-        inset: 0;
-        z-index: 1000;
-        display: block;
-        border: 0;
-        background: rgba(22, 10, 28, 0.58);
+    .admin-sidebar-bottom {
+        margin-top: 12px;
     }
 
-    body.admin-navigation-open {
-        overflow: hidden;
-    }
-
-    .inventory-section .section-heading {
-        align-items: flex-start;
-    }
-
-    .inventory-section .admin-search {
+    .admin-main {
         width: 100%;
+        margin-left: 0;
+        padding: 22px 16px;
+    }
+
+    .admin-main .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .admin-main .stat-card {
+        padding: 16px;
+    }
+
+    .admin-main .welcome-banner {
+        padding: 20px;
+    }
+
+    .admin-main .welcome-symbol {
+        display: none;
+    }
+
+    .admin-account-columns,
+    .admin-account-info {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-main > h1 {
+        font-size: 25px;
+    }
+}
+
+@media (max-width: 380px) {
+    .admin-main .stats-grid {
+        grid-template-columns: 1fr;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .admin-header nav {
-        transition: none;
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition: none !important;
     }
 }

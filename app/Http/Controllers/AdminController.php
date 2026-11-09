@@ -31,22 +31,28 @@ class AdminController extends Controller
             'username' => ['required', 'string', 'max:50'],
             'password' => ['required', 'string'],
         ]);
+
         $admin = Admin::where('username', $credentials['username'])
             ->where('is_active', true)
             ->first();
 
         if (!$admin || !Hash::check($credentials['password'], $admin->password_hash)) {
-            return back()->withErrors(['username' => 'The username or password is incorrect.'])->onlyInput('username');
+            return back()
+                ->withErrors(['username' => 'The username or password is incorrect.'])
+                ->onlyInput('username');
         }
 
         $request->session()->regenerate();
+
         $request->session()->put([
             'admin_id' => $admin->id,
             'admin_username' => $admin->username,
             'admin_role' => $admin->role,
         ]);
 
-        return redirect()->intended(route('admin.dashboard'))->with('status', 'Welcome to the admin dashboard.');
+        return redirect()
+            ->intended(route('admin.dashboard'))
+            ->with('status', 'Welcome to the admin dashboard.');
     }
 
     public function logout(Request $request): RedirectResponse
@@ -54,19 +60,28 @@ class AdminController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('admin.login')->with('status', 'You have signed out.');
+        return redirect()
+            ->route('admin.login')
+            ->with('status', 'You have signed out.');
     }
 
     public function dashboard(): View
     {
         return view('admin.dashboard', [
             'ordersToday' => Order::whereDate('created_at', today())->count(),
-            'pendingOrders' => Order::whereIn('order_status', ['pending', 'confirmed', 'preparing', 'ready'])->count(),
+
+            'pendingOrders' => Order::whereIn(
+                'order_status',
+                ['pending', 'confirmed', 'preparing', 'ready']
+            )->count(),
+
             'customersCount' => Customer::count(),
             'productsCount' => MenuItem::count(),
+
             'salesToday' => Order::whereDate('created_at', today())
                 ->whereNotIn('order_status', ['cancelled'])
                 ->sum('total_amount'),
+
             'recentOrders' => Order::latest()->limit(8)->get(),
         ]);
     }
@@ -91,6 +106,7 @@ class AdminController extends Controller
         $products = MenuItem::query()
             ->when($request->filled('search'), fn ($query) => $query->where(function ($query) use ($request) {
                 $search = $request->input('search');
+
                 $query->where('name', 'like', '%'.$search.'%')
                     ->orWhere('product_code', 'like', '%'.$search.'%')
                     ->orWhere('size_label', 'like', '%'.$search.'%');
@@ -112,6 +128,7 @@ class AdminController extends Controller
         $data = $request->validate([
             'stock' => ['required', 'integer', 'min:0', 'max:100000'],
         ]);
+
         $product->update($data);
 
         return back()->with('status', 'Stock quantity updated successfully.');
@@ -120,8 +137,12 @@ class AdminController extends Controller
     public function storeProduct(Request $request): RedirectResponse
     {
         $data = $this->validatedProduct($request);
-        $data['image_url'] = $request->file('image')?->storePublicly('products', 'public');
+
+        $data['image_url'] = $request->file('image')
+            ?->storePublicly('products', 'public');
+
         $data['is_available'] = $request->boolean('is_available');
+
         MenuItem::create($data);
 
         return back()->with('status', 'Product added.');
@@ -130,10 +151,14 @@ class AdminController extends Controller
     public function updateProduct(Request $request, MenuItem $product): RedirectResponse
     {
         $data = $this->validatedProduct($request, $product);
+
         if ($request->hasFile('image')) {
-            $data['image_url'] = $request->file('image')->storePublicly('products', 'public');
+            $data['image_url'] = $request->file('image')
+                ->storePublicly('products', 'public');
         }
+
         $data['is_available'] = $request->boolean('is_available');
+
         $product->update($data);
 
         return back()->with('status', 'Product updated.');
@@ -149,7 +174,10 @@ class AdminController extends Controller
     public function orders(Request $request): View
     {
         $orders = Order::query()
-            ->when($request->filled('status'), fn ($query) => $query->where('order_status', (string) $request->input('status')))
+            ->when($request->filled('status'), fn ($query) => $query->where(
+                'order_status',
+                (string) $request->input('status')
+            ))
             ->with('payment')
             ->latest()
             ->paginate(20)
@@ -161,34 +189,68 @@ class AdminController extends Controller
     public function updateOrder(Request $request, Order $order): RedirectResponse
     {
         $data = $request->validate([
-            'order_status' => ['nullable', Rule::in(['pending', 'preparing', 'completed', 'cancelled'])],
+            'order_status' => ['nullable', Rule::in([
+                'pending',
+                'preparing',
+                'completed',
+                'cancelled',
+            ])],
             'payment_action' => ['nullable', Rule::in(['mark_paid'])],
         ]);
+
         if (!isset($data['order_status']) && !isset($data['payment_action'])) {
-            return back()->withErrors(['order' => 'Choose an order or payment action.']);
+            return back()->withErrors([
+                'order' => 'Choose an order or payment action.',
+            ]);
         }
 
         DB::transaction(function () use ($data, $order) {
-            $lockedOrder = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
-            if (isset($data['order_status']) && $data['order_status'] !== $lockedOrder->order_status) {
+            $lockedOrder = Order::whereKey($order->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (
+                isset($data['order_status'])
+                && $data['order_status'] !== $lockedOrder->order_status
+            ) {
                 $transitions = [
                     'pending' => ['preparing', 'cancelled'],
                     'preparing' => ['completed', 'cancelled'],
                 ];
-                abort_unless(in_array($data['order_status'], $transitions[$lockedOrder->order_status] ?? [], true), 422);
+
+                abort_unless(
+                    in_array(
+                        $data['order_status'],
+                        $transitions[$lockedOrder->order_status] ?? [],
+                        true
+                    ),
+                    422
+                );
 
                 if ($data['order_status'] === 'cancelled') {
-                    foreach ($lockedOrder->items()->whereNotNull('menu_item_id')->get() as $item) {
-                        MenuItem::whereKey($item->menu_item_id)->increment('stock', $item->quantity);
+                    foreach (
+                        $lockedOrder->items()
+                            ->whereNotNull('menu_item_id')
+                            ->get() as $item
+                    ) {
+                        MenuItem::whereKey($item->menu_item_id)
+                            ->increment('stock', $item->quantity);
                     }
                 }
-                $lockedOrder->update(['order_status' => $data['order_status']]);
+
+                $lockedOrder->update([
+                    'order_status' => $data['order_status'],
+                ]);
             }
 
             if (($data['payment_action'] ?? null) === 'mark_paid') {
                 $lockedOrder->payment()->updateOrCreate(
                     [],
-                    ['payment_status' => 'paid', 'amount' => $lockedOrder->total_amount, 'paid_at' => now()]
+                    [
+                        'payment_status' => 'paid',
+                        'amount' => $lockedOrder->total_amount,
+                        'paid_at' => now(),
+                    ]
                 );
             }
         });
@@ -198,7 +260,11 @@ class AdminController extends Controller
 
     public function customers(): View
     {
-        return view('admin.customers', ['customers' => Customer::withCount('orders')->latest()->paginate(25)]);
+        return view('admin.customers', [
+            'customers' => Customer::withCount('orders')
+                ->latest()
+                ->paginate(25),
+        ]);
     }
 
     public function sales(): View
@@ -220,8 +286,14 @@ class AdminController extends Controller
 
                     return [
                         'date' => Carbon::parse($date),
-                        'count' => $sales->get($date, ['count' => 0, 'total' => 0])['count'],
-                        'total' => $sales->get($date, ['count' => 0, 'total' => 0])['total'],
+                        'count' => $sales->get($date, [
+                            'count' => 0,
+                            'total' => 0,
+                        ])['count'],
+                        'total' => $sales->get($date, [
+                            'count' => 0,
+                            'total' => 0,
+                        ])['total'],
                     ];
                 })
                 ->reverse()
@@ -229,16 +301,86 @@ class AdminController extends Controller
         ]);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Personal Administrator Account
+    |--------------------------------------------------------------------------
+    */
+
+    public function account(Request $request): View
+    {
+        $admin = $request->attributes->get('admin');
+
+        return view('admin.account', compact('admin'));
+    }
+
+    public function updateAccountUsername(Request $request): RedirectResponse
+    {
+        $admin = $request->attributes->get('admin');
+
+        $data = $request->validate([
+            'username' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('admins', 'username')->ignore($admin->id),
+            ],
+        ]);
+
+        $admin->username = $data['username'];
+        $admin->save();
+
+        $request->session()->put('admin_username', $admin->username);
+
+        return back()->with(
+            'status',
+            'Your username has been updated successfully.'
+        );
+    }
+
+    public function updateAccountPassword(Request $request): RedirectResponse
+    {
+        $admin = $request->attributes->get('admin');
+
+        $data = $request->validate([
+            'current_password' => ['required', 'string'],
+            'new_password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        if (!Hash::check($data['current_password'], $admin->password_hash)) {
+            return back()->withErrors([
+                'current_password' => 'Your current password is incorrect.',
+            ]);
+        }
+
+        $admin->password_hash = Hash::make($data['new_password']);
+        $admin->save();
+
+        return back()->with(
+            'status',
+            'Your password has been changed successfully.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Administrator Management (Manager Only)
+    |--------------------------------------------------------------------------
+    */
+
     public function accounts(Request $request): View
     {
         $this->ensureManager($request);
 
-        return view('admin.accounts', ['admins' => Admin::orderBy('username')->get()]);
+        return view('admin.accounts', [
+            'admins' => Admin::orderBy('username')->get(),
+        ]);
     }
 
     public function storeAdmin(Request $request): RedirectResponse
     {
         $this->ensureManager($request);
+
         $data = $request->validate([
             'username' => ['required', 'string', 'max:50', 'unique:admins,username'],
             'first_name' => ['required', 'string', 'max:100'],
@@ -248,9 +390,12 @@ class AdminController extends Controller
             'password' => ['required', 'string', 'min:8'],
             'is_active' => ['sometimes', 'boolean'],
         ]);
+
         $data['password_hash'] = Hash::make($data['password']);
         $data['is_active'] = $request->boolean('is_active');
+
         unset($data['password']);
+
         Admin::create($data);
 
         return back()->with('status', 'Administrator account created.');
@@ -259,8 +404,14 @@ class AdminController extends Controller
     public function updateAdmin(Request $request, Admin $admin): RedirectResponse
     {
         $this->ensureManager($request);
+
         $data = $request->validate([
-            'username' => ['required', 'string', 'max:50', Rule::unique('admins')->ignore($admin->id)],
+            'username' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('admins')->ignore($admin->id),
+            ],
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
             'email' => ['nullable', 'email', 'max:150'],
@@ -269,22 +420,38 @@ class AdminController extends Controller
             'is_active' => ['sometimes', 'boolean'],
         ]);
 
-        if ($admin->id === $request->attributes->get('admin')->id && !$request->boolean('is_active')) {
-            return back()->withErrors(['is_active' => 'You cannot deactivate your own account.']);
+        if (
+            $admin->id === $request->attributes->get('admin')->id
+            && !$request->boolean('is_active')
+        ) {
+            return back()->withErrors([
+                'is_active' => 'You cannot deactivate your own account.',
+            ]);
         }
 
         if ($data['password'] ?? null) {
             $data['password_hash'] = Hash::make($data['password']);
         }
+
         unset($data['password']);
+
         $data['is_active'] = $request->boolean('is_active');
+
         $admin->update($data);
 
         return back()->with('status', 'Administrator account updated.');
     }
 
-    private function validatedProduct(Request $request, ?MenuItem $product = null): array
-    {
+    /*
+    |--------------------------------------------------------------------------
+    | Private Helpers
+    |--------------------------------------------------------------------------
+    */
+
+    private function validatedProduct(
+        Request $request,
+        ?MenuItem $product = null
+    ): array {
         return $request->validate([
             'product_code' => [
                 'required',
@@ -305,6 +472,9 @@ class AdminController extends Controller
 
     private function ensureManager(Request $request): void
     {
-        abort_unless($request->attributes->get('admin')->role === 'manager', 403);
+        abort_unless(
+            $request->attributes->get('admin')->role === 'manager',
+            403
+        );
     }
 }
