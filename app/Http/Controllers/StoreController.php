@@ -179,7 +179,11 @@ class StoreController extends Controller
                 ['email' => $customer->email],
                 ['token' => hash('sha256', $token), 'created_at' => now()]
             );
-            $resetUrl = route('password.reset', ['token' => $token, 'email' => $customer->email]);
+            $resetUrl = rtrim((string) config('app.url'), '/').route(
+                'password.reset',
+                ['token' => $token, 'email' => $customer->email],
+                false
+            );
             Mail::raw(
                 "Use this link within 60 minutes to reset your Purple Blend password:\n\n{$resetUrl}\n\nIf you did not request this, you can ignore this email.",
                 fn ($message) => $message->to($customer->email)->subject('Reset your Purple Blend password')

@@ -12,10 +12,11 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         $username = env('PURPLE_BLEND_ADMIN_USERNAME');
+        $email = env('PURPLE_BLEND_ADMIN_EMAIL');
         $password = env('PURPLE_BLEND_ADMIN_PASSWORD');
 
-        if (!$username || !$password) {
-            throw new RuntimeException('Set PURPLE_BLEND_ADMIN_USERNAME and PURPLE_BLEND_ADMIN_PASSWORD before running AdminSeeder.');
+        if (!$username || !$email || !$password) {
+            throw new RuntimeException('Set PURPLE_BLEND_ADMIN_USERNAME, PURPLE_BLEND_ADMIN_EMAIL, and PURPLE_BLEND_ADMIN_PASSWORD before running AdminSeeder.');
         }
 
         Admin::updateOrCreate(
@@ -23,7 +24,7 @@ class AdminSeeder extends Seeder
             [
                 'first_name' => 'Store',
                 'last_name' => 'Administrator',
-                'email' => null,
+                'email' => $email,
                 'password_hash' => Hash::make($password),
                 'role' => 'manager',
                 'is_active' => true,
