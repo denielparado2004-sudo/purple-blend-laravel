@@ -11,7 +11,7 @@
 @if(session('admin_id'))
     <header class="site-header admin-header">
         <a class="brand" href="{{ route('admin.dashboard') }}">
-            <img class="admin-logo" src="{{ asset('Images/purple-blend-logo.jpg') }}" alt="The Purple Blend">
+            <img class="admin-logo" src="{{ asset('images/purple-blend-logo.jpg') }}" alt="The Purple Blend">
             <span>Admin portal<small>{{ session('admin_username') }}</small></span>
         </a>
         <button class="admin-menu-toggle" type="button" aria-controls="admin-navigation" aria-expanded="false">

@@ -14,7 +14,7 @@
                 @foreach($items as $item)
                     <div class="checkout-item">
                         <div class="checkout-item-product">
-                            <div class="checkout-item-image"><img src="{{ $item->image_src ?? asset('Images/Milktea.jpg') }}" alt=""></div>
+                            <div class="checkout-item-image"><img src="{{ $item->image_src ?? asset('images/Milktea.jpg') }}" alt=""></div>
                             <div class="checkout-item-info"><strong>{{ $item->name }}</strong><p>₱{{ number_format($item->price, 2) }} each · Qty {{ $item->cart_quantity }}</p></div>
                         </div>
                         <strong>₱{{ number_format($item->line_total, 2) }}</strong>

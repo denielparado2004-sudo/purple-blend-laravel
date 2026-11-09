@@ -15,7 +15,7 @@
     <header>
         <nav class="navbar" aria-label="Main navigation">
             <a href="{{ route('home') }}" class="brand" aria-label="The Purple Blend home">
-                <img class="brand-logo" src="{{ asset('Images/purple-blend-logo.jpg') }}" alt="The Purple Blend">
+                <img class="brand-logo" src="{{ asset('images/purple-blend-logo.jpg') }}" alt="The Purple Blend">
             </a>
 
             <div class="header-actions">

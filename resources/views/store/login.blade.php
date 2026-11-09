@@ -7,7 +7,7 @@
 @section('content')
 <section class="auth-card">
     <a class="auth-brand" href="{{ route('home') }}">
-        <img src="{{ asset('Images/purple-blend-logo.jpg') }}" alt="The Purple Blend">
+        <img src="{{ asset('images/purple-blend-logo.jpg') }}" alt="The Purple Blend">
     </a>
 
     <p class="eyebrow">WELCOME BACK</p>

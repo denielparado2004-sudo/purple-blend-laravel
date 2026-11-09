@@ -8,7 +8,7 @@
     <a class="back-link" href="{{ route('home') }}#menu">← Back to menu</a>
     <div class="product-layout">
         <section class="product-details">
-            <div class="product-image-container"><img class="product-image" src="{{ $product->image_src ?? asset('Images/Milktea.jpg') }}" alt="{{ $product->name }}"></div>
+            <div class="product-image-container"><img class="product-image" src="{{ $product->image_src ?? asset('images/Milktea.jpg') }}" alt="{{ $product->name }}"></div>
             <div class="product-information">
                 <p class="product-category">{{ $product->category === 'Drinks' ? 'Beverage' : ($product->category === 'Meryenda / Dessert' ? 'Meryenda' : $product->category) }}</p>
                 <h1>{{ $product->name }}</h1>
@@ -39,7 +39,7 @@
                 <div class="related-list">
                     @foreach($relatedProducts as $related)
                         <article class="related-card">
-                            <a class="related-image-link" href="{{ route('products.show', $related) }}"><img class="related-image" src="{{ $related->image_src ?? asset('Images/Milktea.jpg') }}" alt="{{ $related->name }}" loading="lazy"></a>
+                            <a class="related-image-link" href="{{ route('products.show', $related) }}"><img class="related-image" src="{{ $related->image_src ?? asset('images/Milktea.jpg') }}" alt="{{ $related->name }}" loading="lazy"></a>
                             <div class="related-info"><a class="related-name" href="{{ route('products.show', $related) }}">{{ $related->name }}</a><p class="related-price">₱{{ number_format($related->price, 2) }}</p><a class="view-product-button" href="{{ route('products.show', $related) }}">View Product <span>→</span></a></div>
                         </article>
                     @endforeach

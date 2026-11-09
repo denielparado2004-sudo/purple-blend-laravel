@@ -14,7 +14,7 @@
             <div class="cart-section-heading"><h2>Your Items</h2><a href="{{ route('home') }}#menu">Continue shopping</a></div>
             @forelse($items as $item)
                 <article class="cart-item">
-                    <a href="{{ route('products.show', $item) }}"><img class="cart-item-image" src="{{ $item->image_src ?? asset('Images/Milktea.jpg') }}" alt="{{ $item->name }}"></a>
+                    <a href="{{ route('products.show', $item) }}"><img class="cart-item-image" src="{{ $item->image_src ?? asset('images/Milktea.jpg') }}" alt="{{ $item->name }}"></a>
                     <div class="cart-item-info">
                         <h3>{{ $item->name }}</h3>
                         <p class="cart-item-price">₱{{ number_format($item->price, 2) }}</p>

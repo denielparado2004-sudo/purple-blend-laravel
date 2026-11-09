@@ -14,7 +14,7 @@
     </div>
     <div class="hero-visual">
         <div class="hero-image-frame">
-            <img class="hero-image" src="{{ asset('Images/Milktea.jpg') }}" alt="A Purple Blend favorite" fetchpriority="high">
+            <img class="hero-image" src="{{ asset('images/Milktea.jpg') }}" alt="A Purple Blend favorite" fetchpriority="high">
             <div class="hero-image-overlay"></div>
             <div class="hero-image-caption"><span class="hero-caption-label">THE PURPLE BLEND</span><strong>Your next favorite meal awaits.</strong></div>
         </div>
@@ -61,7 +61,7 @@
             @php($inStock = $product->stock > 0)
             <article class="product-card {{ $inStock ? '' : 'is-out-of-stock' }}">
                 <a href="{{ route('products.show', $product) }}" class="product-detail-link" aria-label="View details for {{ $product->name }}">
-                    <img class="product-image" src="{{ $product->image_src ?? asset('Images/Milktea.jpg') }}" alt="{{ $product->name }}" loading="lazy">
+                    <img class="product-image" src="{{ $product->image_src ?? asset('images/Milktea.jpg') }}" alt="{{ $product->name }}" loading="lazy">
                 </a>
                 <div class="product-info">
                     <span class="product-category">{{ $product->category === 'Drinks' ? 'Beverage' : ($product->category === 'Meryenda / Dessert' ? 'Meryenda' : $product->category) }}</span>
