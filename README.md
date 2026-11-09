@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Purple Blend
 
 Purple Blend is a Laravel ordering application for the customer storefront and store administration.
@@ -23,3 +24,6 @@ Purple Blend is a Laravel ordering application for the customer storefront and s
 The customer menu, shopping cart, registration/sign-in, password reset, checkout, order history, and profile pages are implemented in Laravel. Administrators can manage products, stock, orders, staff accounts, and payment status, and view customers and 30-day sales. Product images are in `public/images`; newly uploaded product photos use Laravel's public storage disk.
 
 Configure a working Laravel mail transport in `.env` for password reset links. The catalog seeder imports menu item details only. It does not import customer accounts, password hashes, orders, or payment records from the legacy database; products with no corresponding source photo use the storefront placeholder.
+=======
+# purple-blend-laravel
+>>>>>>> origin/main
